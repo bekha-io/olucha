@@ -4,6 +4,11 @@ type DSL struct {
 	// ID is a unique string identifier for the DSL
 	ID string `json:"id"`
 
+	// Secrets is a list of secrets that are used by the workflow
+	// Defined by the system's users and uploaded separately to each workflow instance.
+	// If not explicitly provided, will try to be fetched from the environment variables.
+	Secrets map[string]string `json:"secrets"`
+
 	// Version is the version of the DSL
 	Version string `json:"version"`
 
