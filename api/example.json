@@ -1,0 +1,17 @@
+{
+    "id": "example",
+    "version": "1.0.0",
+    "forms": {
+        "form1": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "steps": {
+        
+    }
+}
