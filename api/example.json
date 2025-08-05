@@ -2,16 +2,24 @@
     "id": "example",
     "version": "1.0.0",
     "forms": {
-        "form1": {
-            "type": "object",
+        "contactUsForm": {
             "properties": {
                 "name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 }
             }
         }
     },
     "steps": {
-        
+        "fillContactUsForm": {
+            "type": "humanTask",
+            "form": "contactUsForm"
+        }
     }
 }
