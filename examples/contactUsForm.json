@@ -1,0 +1,54 @@
+{
+    "id": "contactUsBp",
+    "version": "1.0.0",
+    "secrets": {
+        "serviceToken": "${SERVICE_TOKEN}"
+    },
+    "forms": {
+        "contactUsForm": {
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "steps": {
+        "fillContactUsForm": {
+            "type": "humanTask",
+            "form": "contactUsForm",
+            "label": "Fill Contact Us Form",
+            "description": "Fill the contact us form and receive a call from us within a few minutes"
+        },
+        "sendEmail": {
+            "type": "systemTask",
+            "label": "Send Email",
+            "description": "Sends an email to the user to confirm that we received their request",
+            "email": {
+                "to": "{{$forms.contactUsForm.email}}",
+                "subject": "Thank you for contacting us",
+                "body": "Thank you for contacting us. Our representative will call you within a few minutes."
+            }
+        },
+        "processApplication": {
+            "type": "systemTask",
+            "label": "Process Application",
+            "description": "Assigns the application to the sales team",
+            "httpRequest": {
+                "url": "https://api.example.com/processApplication",
+                "method": "POST",
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer {{$secrets.serviceToken}}"
+                },
+                "body": {
+                    "name": "{{$forms.contactUsForm.name}}",
+                    "email": "{{$forms.contactUsForm.email}}"
+                }
+            }
+        }
+    }
+}

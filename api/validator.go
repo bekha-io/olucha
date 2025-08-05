@@ -59,11 +59,11 @@ func (v *defaultDSLValidator) validateForm(formID string, form map[string]any) e
 func (v *defaultDSLValidator) validateStep(stepID string, step Step) error {
 
 	if stepID == "" {
-		return fmt.Errorf("one of the steps has no name")
+		return fmt.Errorf("all steps must have an ID")
 	}
 
 	if step.Type == "" {
-		return fmt.Errorf("step %s has no type", stepID)
+		return fmt.Errorf("step '%s' has no type", stepID)
 	}
 
 	// Validate the step based on its type

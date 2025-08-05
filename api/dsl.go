@@ -7,10 +7,12 @@ type DSL struct {
 	// Version is the version of the DSL
 	Version string `json:"version"`
 
-	// Variables is a list of variables that are used by the DSL and are shared between steps
+	// Variables is a list of variables that are used by the DSL and are shared between steps.
+	// Variables are used to store data that is shared between steps.
 	Variables map[string]any `json:"variables"`
 
-	// Forms is a list of JSONSchema forms that are used by different steps
+	// Forms is a list of JSONSchema forms that are used by different steps.
+	// Forms are used to validate the data that is submitted by the user.
 	Forms map[string]map[string]any `json:"forms"`
 
 	// Steps is a list of steps (actions) that are executed in the mentioned order
@@ -29,6 +31,12 @@ const (
 
 // Step is a single step in the workflow
 type Step struct {
+	// Label is a human-readable name for the step. If empty, the step will be named after its type
+	Label string `json:"label"`
+
+	// Description is a human-readable description for the step. If empty, the step will not have a description
+	Description string `json:"description"`
+
 	Type StepType `json:"type"`
 
 	// Embedding different step types
@@ -37,6 +45,12 @@ type Step struct {
 
 	// ID of the next step to be executed
 	Next string `json:"next"`
+
+	// Before is a hook to be executed before the step is executed
+	Before Hook `json:"before"`
+
+	// After is a hook to be executed after the step is executed
+	After Hook `json:"after"`
 }
 
 type HumanTaskStep struct {
@@ -45,14 +59,21 @@ type HumanTaskStep struct {
 }
 
 type ConditionStep struct {
-	// Expression to be evaluated to determine the next step to be executed
+	// Expr is an expression to be evaluated to determine the next step to be executed
 	// Access variables using the syntax: {{variableName}}
 	// Or the filled forms using the syntax: {{formName.propertyName}}
-	Condition string `json:"condition"`
+	Expr string `json:"expr"`
 
 	// ID of the step to be executed if the condition is true
 	If string `json:"if"`
 
 	// ID of the step to be executed if the condition is false
 	Else string `json:"else"`
+}
+
+type Hook struct {
+	// Script is a script to be executed as a hook
+	// Access variables using the syntax: {{variableName}}
+	// Or the filled forms using the syntax: {{formName.propertyName}}
+	Script string `json:"script"`
 }
