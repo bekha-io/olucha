@@ -61,6 +61,10 @@ type Step struct {
 type HumanTaskStep struct {
 	// ID of the form to be used for this step. Forms are used only for those steps that are of type StepTypeHumanTask (humanTask)
 	Form string `json:"form"`
+
+	// RBAC is a list of roles that are allowed to perform the step
+	// If not provided, the step will be available to anyone
+	RBAC RBAC `json:"rbac"`
 }
 
 type ConditionStep struct {
@@ -81,4 +85,14 @@ type Hook struct {
 	// Access variables using the syntax: {{variableName}}
 	// Or the filled forms using the syntax: {{formName.propertyName}}
 	Script string `json:"script"`
+}
+
+// RBAC is a list of roles that are allowed to perform the step
+// Passed to the step while executing
+type RBAC struct {
+	// Any is a list of roles that are allowed to perform the step
+	Any []string `json:"any"`
+
+	// All is a list of roles that are required to perform the step
+	All []string `json:"all"`
 }
