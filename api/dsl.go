@@ -1,5 +1,12 @@
 package api
 
+import (
+	"fmt"
+	"slices"
+
+	"github.com/xeipuuv/gojsonschema"
+)
+
 type DSL struct {
 	// ID is a unique string identifier for the DSL
 	ID string `json:"id"`
@@ -58,6 +65,58 @@ type Step struct {
 	After Hook `json:"after"`
 }
 
+func (s Step) ValidateForm(dsl DSL, form map[string]any) error {
+	// If no form is provided, the step is allowed to be executed by anyone
+	if s.Form == "" {
+		return nil
+	}
+
+	// If the form is not defined in the DSL, the step is not allowed to be executed
+	if _, ok := dsl.Forms[s.Form]; !ok {
+		return fmt.Errorf("form %s is not defined in the DSL", s.Form)
+	}
+
+	schema, err := gojsonschema.NewSchema(gojsonschema.NewGoLoader(form))
+	if err != nil {
+		return fmt.Errorf("failed to create schema: %w", err)
+	}
+
+	res, err := schema.Validate(gojsonschema.NewGoLoader(form))
+	if err != nil {
+		return fmt.Errorf("validation attempt failed: %w", err)
+	}
+
+	if !res.Valid() {
+		return fmt.Errorf("validation error: %s", res.Errors())
+	}
+
+	return nil
+}
+
+func (s Step) IsAllowedFor(roles []string) bool {
+	// If any of the roles are in the Any list, the step is allowed
+	if len(s.RBAC.Any) > 0 {
+		for _, role := range roles {
+			if slices.Contains(s.RBAC.Any, role) {
+				return true
+			}
+		}
+	}
+
+	// If all of the roles are in the All list, the step is allowed
+	if len(s.RBAC.All) > 0 {
+		for _, role := range roles {
+			if !slices.Contains(s.RBAC.All, role) {
+				return false
+			}
+		}
+	}
+
+	// If no roles are provided, the step is allowed to be executed by anyone
+	return true
+}
+
+// HumanTaskStep is a step that requires human input or human interaction
 type HumanTaskStep struct {
 	// ID of the form to be used for this step. Forms are used only for those steps that are of type StepTypeHumanTask (humanTask)
 	Form string `json:"form"`
@@ -67,6 +126,7 @@ type HumanTaskStep struct {
 	RBAC RBAC `json:"rbac"`
 }
 
+// ConditionStep is a step that evaluates an expression and executes a different step based on the result
 type ConditionStep struct {
 	// Expr is an expression to be evaluated to determine the next step to be executed
 	// Access variables using the syntax: {{variableName}}
@@ -80,6 +140,7 @@ type ConditionStep struct {
 	Else string `json:"else"`
 }
 
+// Hook is a script to be executed as a hook
 type Hook struct {
 	// Script is a script to be executed as a hook
 	// Access variables using the syntax: {{variableName}}
@@ -87,7 +148,7 @@ type Hook struct {
 	Script string `json:"script"`
 }
 
-// RBAC is a list of roles that are allowed to perform the step
+// RBAC is a list of roles (permissions) that are allowed to perform the step
 // Passed to the step while executing
 type RBAC struct {
 	// Any is a list of roles that are allowed to perform the step
